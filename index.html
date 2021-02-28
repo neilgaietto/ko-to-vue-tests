@@ -47,39 +47,44 @@
 
 <body>
   <div>
-    <div id="koLiveExample" class="liveExample" data-bind='attr: { custom: firstName }'>
+    <div id="koLiveExample" class="liveExample the-ko">
       <p>First name: <input data-bind='value: firstName' /></p>
       <p>Last name: <input data-bind='value: lastName' /></p>
-      <h2>Hello, <span data-bind='text: fullName'> </span> from KO!</h2>
+      <p>shared: <input data-bind='value: shared' /></p>
+      <h2>Hello, <span data-bind='text: fullName, click: reset'> </span> from KO!</h2>
     </div>
-    <div id="app2">
-      <testcomponent :custom="custom" v-on:clk="onClk"></testcomponent>
+    <div id="app2" class="liveExample the-vue">
+      <testcomponent :shared.sync="shared" v-on:clk="onClk"></testcomponent>
     </div>
     <button id="btnAlert" value="Alert">Alert</button>
   </div>
+
+
   <script>
-    //KO
-    var kovm = (function () {
+    //-- KO
+    var koVM = (function () {
       var ViewModel = function (first, last) {
         this.firstName = ko.observable(first);
         this.lastName = ko.observable(last);
+        this.shared = ko.observable("");
 
         this.fullName = ko.computed(function () {
-          return this.firstName() + " " + this.lastName();
+          return this.firstName() + " " + this.lastName() + " " + this.shared();
         }, this);
 
-        this.firstName.subscribe(function (newValue) {
-          console.log(newValue);
-          vap2.custom = newValue;
-        });
+        this.reset = function(){
+          this.shared("reset ko");
+        };
       };
       var vm = new ViewModel("Planet", "Earth");
       ko.applyBindings(vm);
       return vm;
     })();
-    //Vue
+
+    //-- Vue
+    // -- vue component
     Vue.component('testcomponent', {
-      props: ['custom'],
+      props: ['shared'],
       data() {
         return {
           firstName: "Planet",
@@ -88,40 +93,70 @@
       },
       computed: {
         fullName: function () {
-          return this.custom + " " + this.firstName + " " + this.lastName;
-        }
+          return this.shared + " " + this.firstName + " " + this.lastName;
+        },
+        sharedValue: {
+          get() {
+            return this.shared;
+          },
+          set(val) {
+            this.$emit("update:shared", val);
+          },
+        },
       },
       methods: {
         clk: function () {
-          kovm.firstName(this.fullName)
-          this.$emit("clk", this.fullName)
+          this.$emit("clk", "reset vue")
         }
       },
       template: `
       <div class="liveExample">
         <p>First name: <input v-model="firstName" /></p>
         <p>Last name: <input v-model="lastName" /></p>
+        <p>Shared: <input v-model="sharedValue" /></p>
         <h2 v-on:click="clk">Hello, {{fullName}} from Vue!</h2>
       </div>`
     });
+    // -- vue app
     var vueApp = (function (eleId) {
       return new Vue({
         el: eleId,
         data: {
-          custom: eleId
+          shared: ""
         },
         methods: {
           onClk: function (newVal) {
-            this.custom = newVal;
+            this.shared = newVal;
           }
         }
       })
     });
-    var vap2 = vueApp("#app2");
-    document.getElementById("btnAlert").onclick = function (e) {
-      alert(kovm.firstName())
-      alert(vap2.custom);
-    }
+    var vueVM = vueApp("#app2");
+
+
+    // -- sync
+    var modelSync = (function () {
+      // -- creates a subscribe/watch connection between ko and vue objects with a matching property
+      var syncFields = function (koModel, vueModel, fieldName) {
+        // ko -> vue
+        koModel[fieldName].subscribe(function (newValue) {
+          console.log("ko->vue:" + fieldName + ":" + newValue);
+          vueModel[fieldName] = newValue;
+        });
+
+        // vue -> ko
+        vueModel.$watch(fieldName, function(newValue){
+          console.log("vue->ko:" + fieldName + ":" + newValue);
+          koModel[fieldName](newValue);
+        });
+      };
+      return {
+        syncFields
+      }
+    })();
+
+    //connect
+    modelSync.syncFields(koVM, vueVM, "shared");
   </script>
 
 
