@@ -52,10 +52,6 @@
       <p>Last name: <input data-bind='value: lastName' /></p>
       <h2>Hello, <span data-bind='text: fullName'> </span> from KO!</h2>
     </div>
-    <div id="app" data-bind="attr: { custom: firstName }">
-      <testcomponent v-on:clk="onClk" data-bind="attr: { custom: firstName }"></testcomponent>
-      <span data-bind='text: firstName, attr: { custom: firstName }'> </span> 
-    </div>
     <div id="app2">
       <testcomponent :custom="custom" v-on:clk="onClk"></testcomponent>
     </div>
@@ -63,7 +59,7 @@
   </div>
   <script>
     //KO
-    (function () {
+    var kovm = (function () {
       var ViewModel = function (first, last) {
         this.firstName = ko.observable(first);
         this.lastName = ko.observable(last);
@@ -71,10 +67,15 @@
         this.fullName = ko.computed(function () {
           return this.firstName() + " " + this.lastName();
         }, this);
+
+        this.firstName.subscribe(function (newValue) {
+          console.log(newValue);
+          vap2.custom = newValue;
+        });
       };
-
-      ko.applyBindings(new ViewModel("Planet", "Earth"));
-
+      var vm = new ViewModel("Planet", "Earth");
+      ko.applyBindings(vm);
+      return vm;
     })();
     //Vue
     Vue.component('testcomponent', {
@@ -92,6 +93,7 @@
       },
       methods: {
         clk: function () {
+          kovm.firstName(this.fullName)
           this.$emit("clk", this.fullName)
         }
       },
@@ -115,13 +117,10 @@
         }
       })
     });
-    var vap1 = vueApp("#app");
     var vap2 = vueApp("#app2");
-
     document.getElementById("btnAlert").onclick = function (e) {
-      
+      alert(kovm.firstName())
       alert(vap2.custom);
-      vap2.custom = "bam"
     }
   </script>
 
