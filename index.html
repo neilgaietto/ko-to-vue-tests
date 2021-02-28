@@ -119,7 +119,9 @@
     var vap2 = vueApp("#app2");
 
     document.getElementById("btnAlert").onclick = function (e) {
-      alert(vap1.custom);
+      
+      alert(vap2.custom);
+      vap2.custom = "bam"
     }
   </script>
 
