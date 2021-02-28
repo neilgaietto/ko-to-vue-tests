@@ -53,10 +53,10 @@
       <h2>Hello, <span data-bind='text: fullName'> </span> from KO!</h2>
     </div>
     <div id="app">
-      <testcomponent custom="teasd"></testcomponent>
+      <testcomponent :custom="custom" v-on:clk="onClk"></testcomponent>
     </div>
     <div id="app2">
-      <testcomponent custom="test"></testcomponent>
+      <testcomponent :custom="custom" v-on:clk="onClk"></testcomponent>
     </div>
     <button id="btnAlert" value="Alert">Alert</button>
   </div>
@@ -89,23 +89,36 @@
           return this.custom + " " + this.firstName + " " + this.lastName;
         }
       },
+      methods: {
+        clk: function () {
+          this.$emit("clk", this.fullName)
+        }
+      },
       template: `
       <div class="liveExample">
         <p>First name: <input v-model="firstName" /></p>
         <p>Last name: <input v-model="lastName" /></p>
-        <h2>Hello, {{fullName}} from Vue!</h2>
+        <h2 v-on:click="clk">Hello, {{fullName}} from Vue!</h2>
       </div>`
     });
     var vueApp = (function (eleId) {
       return new Vue({
-        el: eleId
+        el: eleId,
+        data: {
+          custom: eleId
+        },
+        methods: {
+          onClk: function (newVal) {
+            this.custom = newVal;
+          }
+        }
       })
     });
     var vap1 = vueApp("#app");
     var vap2 = vueApp("#app2");
 
     document.getElementById("btnAlert").onclick = function (e) {
-      alert(vap1.firstName);
+      alert(vap1.custom);
     }
   </script>
 
