@@ -46,15 +46,19 @@
 </head>
 
 <body>
-  <div id="koLiveExample" class="liveExample">
-    <p>First name: <input data-bind='value: firstName' /></p>
-    <p>Last name: <input data-bind='value: lastName' /></p>
-    <h2>Hello, <span data-bind='text: fullName'> </span> from KO!</h2>
-  </div>
-  <div id="vueLiveExample" class="liveExample">
-    <p>First name: <input v-model="firstName" /></p>
-    <p>Last name: <input v-model="lastName" /></p>
-    <h2>Hello, {{fullName}} from Vue!</h2>
+  <div>
+    <div id="koLiveExample" class="liveExample">
+      <p>First name: <input data-bind='value: firstName' /></p>
+      <p>Last name: <input data-bind='value: lastName' /></p>
+      <h2>Hello, <span data-bind='text: fullName'> </span> from KO!</h2>
+    </div>
+    <div id="app">
+      <testcomponent custom="teasd"></testcomponent>
+    </div>
+    <div id="app2">
+      <testcomponent custom="test"></testcomponent>
+    </div>
+    <button id="btnAlert" value="Alert">Alert</button>
   </div>
   <script>
     //KO
@@ -68,24 +72,41 @@
         }, this);
       };
 
-      ko.applyBindings(new ViewModel("Planet", "Earth"), document.getElementById("koLiveExample"));
+      ko.applyBindings(new ViewModel("Planet", "Earth"));
 
     })();
     //Vue
-    (function () {
-      new Vue({
-        el: "#vueLiveExample",
-        data: {
+    Vue.component('testcomponent', {
+      props: ['custom'],
+      data() {
+        return {
           firstName: "Planet",
           lastName: "Mars"
-        },
-        computed: {
-          fullName: function () {
-            return this.firstName + " " + this.lastName;
-          }
         }
+      },
+      computed: {
+        fullName: function () {
+          return this.custom + " " + this.firstName + " " + this.lastName;
+        }
+      },
+      template: `
+      <div class="liveExample">
+        <p>First name: <input v-model="firstName" /></p>
+        <p>Last name: <input v-model="lastName" /></p>
+        <h2>Hello, {{fullName}} from Vue!</h2>
+      </div>`
+    });
+    var vueApp = (function (eleId) {
+      return new Vue({
+        el: eleId
       })
-    })();
+    });
+    var vap1 = vueApp("#app");
+    var vap2 = vueApp("#app2");
+
+    document.getElementById("btnAlert").onclick = function (e) {
+      alert(vap1.firstName);
+    }
   </script>
 
 
