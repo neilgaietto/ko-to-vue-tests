@@ -47,13 +47,14 @@
 
 <body>
   <div>
-    <div id="koLiveExample" class="liveExample">
+    <div id="koLiveExample" class="liveExample" data-bind='attr: { custom: firstName }'>
       <p>First name: <input data-bind='value: firstName' /></p>
       <p>Last name: <input data-bind='value: lastName' /></p>
       <h2>Hello, <span data-bind='text: fullName'> </span> from KO!</h2>
     </div>
-    <div id="app">
-      <testcomponent :custom="custom" v-on:clk="onClk"></testcomponent>
+    <div id="app" data-bind="attr: { custom: firstName }">
+      <testcomponent v-on:clk="onClk" data-bind="attr: { custom: firstName }"></testcomponent>
+      <span data-bind='text: firstName, attr: { custom: firstName }'> </span> 
     </div>
     <div id="app2">
       <testcomponent :custom="custom" v-on:clk="onClk"></testcomponent>
